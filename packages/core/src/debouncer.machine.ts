@@ -2,6 +2,8 @@ import {
   actions,
   assign,
   createMachine,
+  GuardMeta,
+  StateMachine,
 } from "xstate";
 
 type DebounceContext<Contents> = {
@@ -17,7 +19,8 @@ export type DebounceEvent<T> =
   | { type: "SUCCESS" }
   | { type: "ERROR"; message: string };
 
-const isDirty = <T>(ctx: DebounceContext<T>, _e: DebounceEvent<T>, meta) => ctx.dirty;
+const wasFlushDirtied = <T>(_ctx: DebounceContext<T>, _e: DebounceEvent<T>, meta: GuardMeta<DebounceContext<T>, { type: 'SUCCESS' }>) =>
+  (meta.state.value as any).FLUSHING == 'DIRTY'
 
 type Schema<T> = {
   value: "IDLE" | "DEBOUNCE" | "FLUSHING";
@@ -52,42 +55,41 @@ export let WriteDebouncer = <T>() =>
           },
         },
         FLUSHING: {
-            entry: assign({dirty: (_ctx, _e) => false})
-            ,
           invoke: {
             src: "flush",
-            onDone: 
-              {
-                actions: actions.raise({ type: "SUCCESS" }),
-              }
-            
-            ,
+            onDone:
+            {
+              actions: actions.raise({ type: "SUCCESS" }),
+            },
             onError: {
               actions:
-                actions.pure((context, event) => [
+                actions.pure((_context, event) => [
                   actions.raise({ type: "ERROR", message: event.data }),
                 ]),
             },
           },
+          initial: 'CLEAN',
+          states: { CLEAN: {}, DIRTY: {} },
           on: {
             WRITE: {
+              target: '.DIRTY',
               actions: "handleWrite",
               cond: "shouldWrite",
             },
             ERROR: {
               target: "DEBOUNCE",
-              actions: assign({error: (ctx, e) => e.message})
+              actions: assign({ error: (_ctx, e) => e.message })
             },
             SUCCESS: [{
-                target: "DEBOUNCE",
-                actions: assign({
-                    error: (ctx, e) => undefined,
-                  }),    
-                cond: isDirty,
-              },
-              {
+              cond: wasFlushDirtied,
+              target: "DEBOUNCE",
               actions: assign({
-                error: (ctx, e) => undefined,
+                error: (_ctx, _e) => undefined,
+              }),
+            },
+            {
+              actions: assign({
+                error: (_ctx, _e) => undefined,
                 dirty: (_ctx, _e) => false,
               }),
               target: "IDLE",
@@ -105,15 +107,14 @@ export let WriteDebouncer = <T>() =>
         }),
       },
       guards: {
-        shouldWrite: (_ctx, _e, meta) => {
-          console.log(meta);
+        shouldWrite: () => {
           return true;
         },
       },
     }
   );
 
-export function mkWriteDebouncer<T>(initialContents: T) {
+export function mkWriteDebouncer<T>(initialContents: T): StateMachine<DebounceContext<T>, any, DebounceEvent<T>, Schema<T>> {
   return WriteDebouncer<T>().withContext({
     latestContents: initialContents,
     dirty: false,

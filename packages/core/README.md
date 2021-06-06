@@ -1,11 +1,11 @@
-# `core`
+# `document-lifecycle-util`
 
-> TODO: description
+`document-lifecycle-util` is a collection of XState machines that are used to
+implement document editors.
 
 ## Usage
 
-```
-const core = require('core');
+TODO
 
-// TODO: DEMONSTRATE API
-```
+## Machines
+### `src/debouncer.machine.ts`

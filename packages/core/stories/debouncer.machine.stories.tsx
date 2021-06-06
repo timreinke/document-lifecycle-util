@@ -72,7 +72,7 @@ let DemoIndicator = (props: {
     <div>
       <div>
         <div><h2>Debounce Status</h2></div>
-        <div>{state.value == "IDLE" ? "👍 fully saved" : "🕜 saving..."}</div>
+        <div>{!state.context.dirty ? "👍 fully saved" : "🕜 saving..."}</div>
         <div>{state.context.error ? "❌ " + state.context.error : "✅ no errors"}</div>
       </div>
     </div>
@@ -83,8 +83,8 @@ let DemoDbInspector = (props: { db: InterpreterFrom<typeof database> }) => {
   let [state, _] = useService(props.db);
   return (
     <div>
-    <div><h2>DB State</h2></div>
-    <pre>{JSON.stringify(state.context.data, null, 2)}</pre>
+      <div><h2>DB State</h2></div>
+      <pre>{JSON.stringify(state.context.data, null, 2)}</pre>
     </div>
   );
 };
@@ -105,16 +105,16 @@ export const Basic = () => {
             setTimeout(() => {
               console.log("sending");
               if (Math.random() < 0.6) {
-                  reject(`oh no there was a ${Math.random() < 0.5 ? 'client disconnect' : 'server'} error`)
-                  return
+                reject(`oh no there was a ${Math.random() < 0.5 ? 'client disconnect' : 'server'} error`)
+                return
               }
               dbService.send({
                 type: "WRITE",
                 key: "foo",
                 value: context.latestContents,
               });
-              resolve();
-            }, Math.random()*500+500)
+              resolve(null);
+            }, Math.random() * 500 + 500)
           );
         },
       },
