@@ -43,9 +43,17 @@ test('WriteDebouncer unhappy', () => {
             flush: async (_context, _event) => {
 
             }
+        },
+        guards: {
+            shouldWrite: (ctx, evt: any) => {
+                return ctx.latestContents != evt.value
+            }
         }
     })
     var currentState = testMachine.initialState
+
+    currentState = testMachine.transition(currentState, { type: 'WRITE', value: 'contents' })
+    expect(currentState.value).toBe('IDLE')
 
     currentState = testMachine.transition(currentState, { type: 'WRITE', value: 'new contents' })
     expect(currentState.value).toBe('DEBOUNCE')
