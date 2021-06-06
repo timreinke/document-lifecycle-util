@@ -1,6 +1,6 @@
 {
   "name": "document-lifecycle-util",
-  "version": "0.0.2",
+  "version": "0.0.3",
   "description": "Machines for managing document lifecycles in editor applications",
   "keywords": [
     "xstate"
