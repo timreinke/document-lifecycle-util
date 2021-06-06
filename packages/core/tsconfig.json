@@ -4,8 +4,9 @@
         "src/**/*"
     ],
     "compilerOptions": {
+        "strictFunctionTypes": false,
         "outDir": "./dist",
         "rootDir": "./src",
         "skipLibCheck": true
-    }
+    },
 }
