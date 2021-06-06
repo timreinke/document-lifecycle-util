@@ -55,7 +55,7 @@ let DemoEditor = (props) => {
   );
   return (
     <div>
-      <div><h2>Editor</h2></div>
+      <div><h4>Editor</h4></div>
       <textarea rows={8} cols={60} onChange={onChange}>
         {contents}
       </textarea>
@@ -71,7 +71,7 @@ let DemoIndicator = (props: {
   return (
     <div>
       <div>
-        <div><h2>Debounce Status</h2></div>
+        <div><h4>Debounce Status</h4></div>
         <div>{!state.context.dirty ? "👍 fully saved" : "🕜 saving..."}</div>
         <div>{state.context.error ? "❌ " + state.context.error : "✅ no errors"}</div>
       </div>
@@ -83,7 +83,7 @@ let DemoDbInspector = (props: { db: InterpreterFrom<typeof database> }) => {
   let [state, _] = useService(props.db);
   return (
     <div>
-      <div><h2>DB State</h2></div>
+      <div><h4>DB State</h4></div>
       <pre>{JSON.stringify(state.context.data, null, 2)}</pre>
     </div>
   );

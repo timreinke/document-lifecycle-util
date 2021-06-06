@@ -1,0 +1,26 @@
+import { Meta, Story, Canvas } from "@storybook/addon-docs/blocks";
+import { Basic } from './debouncer.machine.stories';
+
+<Meta title="Overview" />
+
+# Overview
+      
+This debouncer is used to debounce document writes. This helps in
+implementing autosave functionality. Your application can send every
+update through to the persistence layer and the persistence layer will
+flush only so often.
+
+The application may want to indicate to the user when their changes are
+fully flushed or if there is a failure (e.g. a network disconnection).
+In order for the application to provide this feedback to the user, it
+will want to observe certain facts about the state of persistence:
+whether the write buffer is flushed and if there is an error what that
+error is.
+
+Additionally, the flush process is asynchronous, so we may receive
+further write requests during flushing.  
+
+<Canvas>
+<h2>Basic Editor</h2> 
+<Basic />
+</Canvas>
