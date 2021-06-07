@@ -3,96 +3,18 @@ import { assign, createMachine, interpret, InterpreterFrom } from "xstate";
 import { useSelector, useService } from "@xstate/react";
 import { produce } from "immer";
 
-import { demo, WriteDebouncer } from "../src/debouncer.machine";
+import { WriteDebouncer } from "../src/debouncer.machine";
+import { database, DemoDbInspector, DemoEditor, DemoIndicator, stringOutputDebouncer } from './util'
 import React, { useState } from "react";
 import { init } from "xstate/lib/actionTypes";
-
-/*
-# Requirements
-
-*/
 
 export default {
   title: "Debouncer",
 };
 
-let database = createMachine({
-  id: "database",
-  initial: "running",
-  context: {
-    data: {},
-  },
-  states: {
-    running: {
-      on: {
-        WRITE: {
-          actions: assign({
-            data: ((ctx: any, event: any) => {
-              return produce(ctx.data, (draft) => {
-                draft[event.key] = event.value;
-              });
-            }) as any,
-          }),
-        },
-      },
-    },
-  },
-});
-
-let stringOutputDebouncer = WriteDebouncer<string>();
-
-let DebouncerServiceContext: React.Context<{
-  debouncerService: InterpreterFrom<typeof stringOutputDebouncer>;
-}> = React.createContext({} as any);
-
-let DemoEditor = (props) => {
-  let [contents, setContents] = React.useState(props.initialContents);
-  let onChange = React.useCallback(
-    (event: React.ChangeEvent<HTMLTextAreaElement>) => {
-      props.onChange(event.target.value);
-    },
-    [props.onChange]
-  );
-  return (
-    <div>
-      <div><h4>Editor</h4></div>
-      <textarea rows={8} cols={60} onChange={onChange}>
-        {contents}
-      </textarea>
-    </div>
-  );
-};
-
-let DemoIndicator = (props: {
-  debouncer: InterpreterFrom<typeof stringOutputDebouncer>;
-}) => {
-  let [state, _] = useService(props.debouncer);
-
-  return (
-    <div>
-      <div>
-        <div><h4>Debounce Status</h4></div>
-        <div>{!state.context.dirty ? "👍 fully saved" : "🕜 saving..."}</div>
-        <div>{state.context.error ? "❌ " + state.context.error : "✅ no errors"}</div>
-      </div>
-    </div>
-  );
-};
-
-let DemoDbInspector = (props: { db: InterpreterFrom<typeof database> }) => {
-  let [state, _] = useService(props.db);
-  return (
-    <div>
-      <div><h4>DB State</h4></div>
-      <pre>{JSON.stringify(state.context.data, null, 2)}</pre>
-    </div>
-  );
-};
 
 export const Basic = () => {
   let dbService = interpret(database);
-
-  //demo();
 
   let machine = stringOutputDebouncer
     .withConfig({
@@ -121,7 +43,6 @@ export const Basic = () => {
     })
     .withContext({
       latestContents: "",
-      dirty: false,
       error: undefined,
     });
   let debouncerService = interpret(machine);
@@ -133,7 +54,7 @@ export const Basic = () => {
   debouncerService.send({ type: "WRITE", value: initialContents });
 
   return (
-    <div>
+    <div style={{}}>
       This editor writes to the database after debouncing for 1.5 seconds. The database write call is asynchronous
       with a latency uniform latency distribution over 0.5-1.0 seconds. The write handler injects
       failures 60% of the time for this demo.

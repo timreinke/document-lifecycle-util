@@ -58,12 +58,10 @@ test('WriteDebouncer unhappy', () => {
     currentState = testMachine.transition(currentState, { type: 'WRITE', value: 'new contents' })
     expect(currentState.value).toBe('DEBOUNCE')
     expect(currentState.context.latestContents).toBe('new contents')
-    expect(currentState.context.dirty).toBe(true)
 
     currentState = testMachine.transition(currentState, { type: 'WRITE', value: 'new contents again' })
     expect(currentState.value).toBe('DEBOUNCE')
     expect(currentState.context.latestContents).toBe('new contents again')
-    expect(currentState.context.dirty).toBe(true)
 
 
     currentState = testMachine.transition(currentState, { type: 'xstate.after(DEBOUNCE_TIME)#debouncer.DEBOUNCE' } as any)
@@ -75,16 +73,13 @@ test('WriteDebouncer unhappy', () => {
 
     currentState = testMachine.transition(currentState, { type: 'error.platform.flush', data: 'foo' } as any)
     expect(currentState.value).toStrictEqual('DEBOUNCE')
-    expect(currentState.context.dirty).toBe(true)
     expect(currentState.context.error).toBe('foo')
 
 
     currentState = testMachine.transition(currentState, { type: 'xstate.after(DEBOUNCE_TIME)#debouncer.DEBOUNCE' } as any)
     expect(currentState.value).toStrictEqual({ FLUSHING: 'CLEAN' })
-    expect(currentState.context.dirty).toBe(true)
 
 
     currentState = testMachine.transition(currentState, { type: 'done.invoke.flush' } as any)
     expect(currentState.value).toStrictEqual('IDLE')
-    expect(currentState.context.dirty).toBe(false)
 })

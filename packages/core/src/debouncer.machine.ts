@@ -8,7 +8,6 @@ import {
 
 type DebounceContext<Contents> = {
   latestContents: Contents;
-  dirty: boolean;
   error: string | undefined;
 };
 
@@ -23,9 +22,11 @@ const wasFlushDirtied = <T>(_ctx: DebounceContext<T>, _e: DebounceEvent<T>, meta
   (meta.state.value as any).FLUSHING == 'DIRTY'
 
 type Schema<T> = {
-  value: "IDLE" | "DEBOUNCE" | "FLUSHING";
+  value: "IDLE" | "DEBOUNCE" | "FLUSH";
   context: DebounceContext<T>;
 };
+
+export type DebouncerMachine<T> = StateMachine<DebounceContext<T>, Schema<T>, DebounceEvent<T>>
 
 export let WriteDebouncer = <T>() =>
   createMachine<DebounceContext<T>, DebounceEvent<T>, Schema<T>>(
@@ -83,14 +84,13 @@ export let WriteDebouncer = <T>() =>
             SUCCESS: [{
               cond: wasFlushDirtied,
               target: "DEBOUNCE",
-              actions: assign({
+              actions: [assign({
                 error: (_ctx, _e) => undefined,
-              }),
+              }), 'onWrite'],
             },
             {
               actions: assign({
                 error: (_ctx, _e) => undefined,
-                dirty: (_ctx, _e) => false,
               }),
               target: "IDLE",
             }],
@@ -103,7 +103,6 @@ export let WriteDebouncer = <T>() =>
         handleWrite: assign({
           latestContents: (_ctx, e: DebounceEvent<T>) =>
             (e as WriteEvent<T>).value,
-          dirty: (_ctx, _e) => true,
         }),
       },
       guards: {
@@ -117,7 +116,6 @@ export let WriteDebouncer = <T>() =>
 export function mkWriteDebouncer<T>(initialContents: T): StateMachine<DebounceContext<T>, any, DebounceEvent<T>, Schema<T>> {
   return WriteDebouncer<T>().withContext({
     latestContents: initialContents,
-    dirty: false,
     error: undefined,
   });
 }
