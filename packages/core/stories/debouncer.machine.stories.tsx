@@ -64,7 +64,7 @@ export const Basic = () => {
           debouncerService.send({ type: "WRITE", value: contents });
         }}
       />
-      <DemoIndicator debouncer={debouncerService} />
+      <DemoIndicator useDebouncer={useService} debouncer={debouncerService} />
       <DemoDbInspector db={dbService} />
     </div>
   );

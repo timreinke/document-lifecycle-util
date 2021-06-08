@@ -20,7 +20,9 @@ export type DocLifecycleContext<T> = {
   href: string;
   contents?: T;
   error?: string;
-  // TODO: limit to interface for actor that accepts WRITE events - irrelevant that this is the debouncer
+  // TODO: limit to interface for actor that accepts WRITE events
+  // it's irrelevant that this is a debouncer, what matters is that it accepts
+  // writes
   persister?: ActorRefFrom<DebouncerMachine<T>>;
 };
 

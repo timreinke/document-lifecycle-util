@@ -6,7 +6,7 @@ import {
   StateMachine,
 } from "xstate";
 
-type DebounceContext<Contents> = {
+export type DebounceContext<Contents> = {
   latestContents: Contents;
   error: string | undefined;
 };
@@ -21,7 +21,7 @@ export type DebounceEvent<T> =
 const wasFlushDirtied = <T>(_ctx: DebounceContext<T>, _e: DebounceEvent<T>, meta: GuardMeta<DebounceContext<T>, { type: 'SUCCESS' }>) =>
   (meta.state.value as any).FLUSHING == 'DIRTY'
 
-type Schema<T> = {
+export type Schema<T> = {
   value: "IDLE" | "DEBOUNCE" | "FLUSH";
   context: DebounceContext<T>;
 };

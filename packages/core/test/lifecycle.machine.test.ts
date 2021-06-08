@@ -8,13 +8,18 @@ test("mkAppLifecycleMachine", (done) => {
     (_, contents) => mkWriteDebouncer(contents).withConfig({delays: {DEBOUNCE_TIME: 0}, services: {flush: () => new Promise(() => {}) }})
   ).withContext({ href: "foo" });
   let svc = interpret(testMachine);
-  svc.onTransition((s, e) => {
+  svc.onTransition((_s, e) => {
+    console.log(e)
   });
 
   svc.start();
   svc.send({ type: "LOAD" });
-  setTimeout(() => {svc.state.context.persister?.send({type: 'WRITE', value: '2'}); }, 5)
-  setTimeout(() => {svc.send({type: 'EXIT'}); done() }, 10)
+  //setTimeout(() => {svc.state.context.persister?.send({type: 'WRITE', value: '2'}); }, 5)
+  //setTimeout(() => {svc.send({type: 'EXIT'}); done() }, 10)
+  setTimeout(() => {(svc.state.context as any).persister?.stop()}, 10)
+  setTimeout(() => {done()}, 20)
+  //svc.stop()
+  //done()
 
 
   /*var currentState = testMachine.initialState;

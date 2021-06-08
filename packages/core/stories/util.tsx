@@ -1,4 +1,4 @@
-import { assign, createMachine, interpret, InterpreterFrom } from "xstate";
+import { assign, createMachine, interpret, InterpreterFrom, PayloadSender, State, StateFrom } from "xstate";
 import { useSelector, useService } from "@xstate/react";
 import { produce } from "immer";
 import React from "react";
@@ -48,17 +48,18 @@ export let DemoEditor = (props) => {
   return (
     <div>
       <div><h4>Editor</h4></div>
-      <textarea rows={8} cols={60} onChange={onChange}>
-        {contents}
+      <textarea rows={8} cols={60} onChange={onChange} defaultValue={contents}>
       </textarea>
     </div>
   );
 };
 
-export let DemoIndicator = (props: {
-  debouncer: InterpreterFrom<typeof stringOutputDebouncer>;
-}) => {
-  let [state, _] = useService(props.debouncer);
+export let DemoIndicator = function<T>(props: {
+  debouncer: T
+  useDebouncer: (p: T) => [StateFrom<typeof stringOutputDebouncer>, PayloadSender<any>];
+  
+}) {
+  let [state, _] = props.useDebouncer(props.debouncer);
 
   return (
     <div>
