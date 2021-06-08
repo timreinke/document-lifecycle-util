@@ -41,13 +41,19 @@ export const MultidocumentEditor = () => {
         </div>
     }
 
-    let EditorContainer_ = (props: { initialState: string, service: InterpreterFrom<typeof testDocMachine> }) => {
-        let initialContents = React.useRef(props.initialState)
-        let [state, send] = useService(props.service)
-        return <DemoEditor initialContents={initialContents.current}
-            onChange={
-                (contents) => state.context.persister.send({ type: "WRITE", value: contents })}
-        />
+    let EditorContainer_ = (props: { service: InterpreterFrom<typeof testDocMachine> }) => {
+        let initialContents = useSelector(props.service, s => s.context.contents)
+        let persister = useSelector(props.service, (s) => s.context.persister)
+        let href = useSelector(props.service, s => s.context.href)
+        return <div>
+            <div><span style={{ fontSize: "1.2em" }}>{href}</span>
+                <button style={{ marginLeft: "2em" }} onClick={() => props.service.send({ type: 'EXIT' })}>X</button>
+            </div>
+            <DemoEditor initialContents={initialContents}
+                onChange={
+                    (contents) => persister.send({ type: "WRITE", value: contents })}
+            />
+        </div>
     }
 
     let EditorContainer = React.memo(EditorContainer_)
@@ -66,16 +72,16 @@ export const MultidocumentEditor = () => {
     }
 
     let Running_ = (props: ServiceProp) => {
-        let [state, _] = useService(props.service)
-        console.log('running', state)
-        return  <div>
-                <EditorContainer initialState={state.context.contents} service={props.service} />
-                <DemoIndicator useDebouncer={useActor as any} debouncer={state.context.persister} />
+        let initialState = useSelector(props.service, state => state.context.contents)
+        let persister = useSelector(props.service, (s) => s.context.persister)
+        return <div>
+            <EditorContainer service={props.service} />
+            <DemoIndicator useDebouncer={useActor as any} debouncer={persister} />
+        </div>
 
-            </div>
     }
 
-    let Running = React.memo(Running_, () => true)
+    let Running = React.memo(Running_)
 
     let Cleanup = (props: ServiceProp) => {
         let [state, _] = useService(props.service)
@@ -88,8 +94,10 @@ export const MultidocumentEditor = () => {
     }
 
     let LifecycledEditor = (props: { service: InterpreterFrom<typeof testDocMachine> }) => {
-        let stateValue = useSelector(props.service, (s) => s.value)
-        console.log('lifecycle', stateValue)
+        // Using useSelector causes the Cleanup component to rerender after transitioning from CLEANUP to STOPPED 
+        //let stateValue = useSelector(props.service, (s) => s.value)
+        let [state, _] = useService(props.service)
+        let stateValue = state.value
         switch (stateValue) {
             case 'PRE_LOAD':
                 return <Loading service={props.service} />
@@ -101,7 +109,8 @@ export const MultidocumentEditor = () => {
                 return <Running service={props.service} />
             case 'CLEANUP':
                 return <Cleanup service={props.service} />
-            default: throw new Error()
+            case 'STOPPED':
+                return <div>done</div>
         }
     }
 
@@ -110,10 +119,13 @@ export const MultidocumentEditor = () => {
         let editorComponents = props.editors.map(key => {
             if (!editorMachines.current[key]) {
                 let svc = interpret(testDocMachine.withContext({ href: key }))
+                svc.onDone(() => {
+                    delete editorMachines.current[key]
+                    props.removeEditor(key)
+                })
                 svc.start()
                 editorMachines.current[key] = svc
                 svc.send({ type: "LOAD" })
-
             }
             return <LifecycledEditor key={key} service={editorMachines.current[key]} />
         })
@@ -126,10 +138,19 @@ export const MultidocumentEditor = () => {
         let [editors, setEditors] = React.useState([])
         return <div>
             <AppToolbar onOpen={(key) => {
-                let newEditors = [...editors, key]
-                setEditors(newEditors)
+                if (!editors.find((v) => v == key)) {
+                    let newEditors = [...editors, key]
+                    setEditors(newEditors)
+                }
             }} />
-            <EditorGroup editors={editors} />
+            <EditorGroup editors={editors} removeEditor={
+                (key) => {
+                    let i = editors.findIndex(v => v == key)
+                    let newEditors = [...editors]
+                    newEditors.splice(i, 1)
+                    setEditors(newEditors)
+                }
+            } />
         </div>
     }
 

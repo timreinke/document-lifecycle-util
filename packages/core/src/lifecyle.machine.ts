@@ -69,7 +69,14 @@ export let mkAppLifecycleMachine = <T>(
       RUNNING: {
         entry: assign({
           persister: (context, _event) =>
-            spawn(mkSaveMachine(context.href, context.contents as T).withConfig({actions: {onWrite: sendParent({type: 'WRITE.DONE'})}}), {
+            spawn(mkSaveMachine(context.href, context.contents as T).withConfig({
+              actions: {
+                onWrite: 
+                  actions.pure((c, e) =>{
+                    return [sendParent({ type: 'WRITE.DONE' })]
+                  })
+              }
+            }), {
               sync: true,
             }),
         }),
@@ -90,10 +97,12 @@ export let mkAppLifecycleMachine = <T>(
       },
       STOPPED: {
         type: "final",
-        entry: assign({persister: (ctx) => { 
+        entry: assign({
+          persister: (ctx) => {
             (ctx.persister as any).stop()
             return undefined
-        }})
+          }
+        })
       },
     },
   });

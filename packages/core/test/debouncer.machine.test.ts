@@ -1,4 +1,4 @@
-import { interpret } from 'xstate'
+import { actions, interpret } from 'xstate'
 import { mkWriteDebouncer } from '../src/debouncer.machine'
 
 test('WriteDebouncer', async () => {
@@ -7,6 +7,7 @@ test('WriteDebouncer', async () => {
         resolveFlushed = resolve
     })
     let testMachine = mkWriteDebouncer('contents').withConfig({
+        actions: {onWrite: actions.pure(() => [])},
         delays: { DEBOUNCE_TIME: 0 },
         services: {
             flush: async (context, _event) => {

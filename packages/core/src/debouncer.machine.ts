@@ -18,7 +18,7 @@ export type DebounceEvent<T> =
   | { type: "SUCCESS" }
   | { type: "ERROR"; message: string };
 
-const wasFlushDirtied = <T>(_ctx: DebounceContext<T>, _e: DebounceEvent<T>, meta: GuardMeta<DebounceContext<T>, { type: 'SUCCESS' }>) =>
+const wasFlushDirtied = <T>(_ctx: DebounceContext<T>, _e: any, meta: GuardMeta<DebounceContext<T>, any>) =>
   (meta.state.value as any).FLUSHING == 'DIRTY'
 
 export type Schema<T> = {
@@ -59,9 +59,19 @@ export let WriteDebouncer = <T>() =>
           invoke: {
             src: "flush",
             onDone:
-            {
-              actions: actions.raise({ type: "SUCCESS" }),
-            },
+              [{
+                cond: wasFlushDirtied,
+                target: "DEBOUNCE",
+                actions: [assign({
+                  error: (_ctx, _e) => undefined,
+                }), 'onWrite'],
+              },
+              {
+                actions: ['onWrite', assign({
+                  error: (_ctx, _e) => undefined,
+                })],
+                target: "IDLE",
+              }],
             onError: {
               actions:
                 actions.pure((_context, event) => [
@@ -84,9 +94,10 @@ export let WriteDebouncer = <T>() =>
             SUCCESS: [{
               cond: wasFlushDirtied,
               target: "DEBOUNCE",
-              actions: [assign({
+              /*actions: [assign({
                 error: (_ctx, _e) => undefined,
-              }), 'onWrite'],
+              }), 'onWrite'],*/
+
             },
             {
               actions: assign({

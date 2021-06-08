@@ -47,7 +47,6 @@ export let DemoEditor = (props) => {
   );
   return (
     <div>
-      <div><h4>Editor</h4></div>
       <textarea rows={8} cols={60} onChange={onChange} defaultValue={contents}>
       </textarea>
     </div>

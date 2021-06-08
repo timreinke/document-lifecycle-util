@@ -58,12 +58,16 @@ export const Basic = () => {
       This editor writes to the database after debouncing for 1.5 seconds. The database write call is asynchronous
       with a latency uniform latency distribution over 0.5-1.0 seconds. The write handler injects
       failures 60% of the time for this demo.
-      <DemoEditor
-        initialContents={initialContents}
-        onChange={(contents) => {
-          debouncerService.send({ type: "WRITE", value: contents });
-        }}
-      />
+      <div>
+        <h4>Editor</h4>
+        <DemoEditor
+          initialContents={initialContents}
+          onChange={(contents) => {
+            debouncerService.send({ type: "WRITE", value: contents });
+          }}
+        />
+      </div>
+
       <DemoIndicator useDebouncer={useService} debouncer={debouncerService} />
       <DemoDbInspector db={dbService} />
     </div>

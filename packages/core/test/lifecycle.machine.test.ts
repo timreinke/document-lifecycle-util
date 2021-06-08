@@ -5,19 +5,23 @@ import { interpret } from "xstate";
 test("mkAppLifecycleMachine", (done) => {
   var testMachine = mkAppLifecycleMachine(
     async () => "",
-    (_, contents) => mkWriteDebouncer(contents).withConfig({delays: {DEBOUNCE_TIME: 0}, services: {flush: () => new Promise(() => {}) }})
+    (_, contents) => {
+      return mkWriteDebouncer(contents).withConfig({ delays: { DEBOUNCE_TIME: 0 }, services: { flush: () => new Promise((resolve) => { resolve("") }) } })
+    }
   ).withContext({ href: "foo" });
   let svc = interpret(testMachine);
   svc.onTransition((_s, e) => {
-    console.log(e)
   });
 
   svc.start();
   svc.send({ type: "LOAD" });
-  //setTimeout(() => {svc.state.context.persister?.send({type: 'WRITE', value: '2'}); }, 5)
-  //setTimeout(() => {svc.send({type: 'EXIT'}); done() }, 10)
-  setTimeout(() => {(svc.state.context as any).persister?.stop()}, 10)
-  setTimeout(() => {done()}, 20)
+
+  setTimeout(() => {
+    svc.state.context.persister?.send({ type: 'WRITE', value: '2' });
+  }, 5)
+  setTimeout(() => { svc.send({ type: 'EXIT' }); done() }, 100)
+  //setTimeout(() => { (svc.state.context as any).persister?.stop() }, 10)
+  //setTimeout(() => { done() }, 20)
   //svc.stop()
   //done()
 
