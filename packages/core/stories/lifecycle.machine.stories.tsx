@@ -1,4 +1,4 @@
-import { DocLifecycleContext, DocLifecycleEvent, mkAppLifecycleMachine } from '../src/lifecyle.machine'
+import { DocLifecycleContext, DocLifecycleEvent, mkAppLifecycleMachine } from '../src/lifecycle.machine'
 import { mkWriteDebouncer } from "../src/debouncer.machine";
 import { interpret, InterpreterFrom, StateMachine } from 'xstate';
 

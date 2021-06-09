@@ -1,16 +1,16 @@
-import { mkAppLifecycleMachine } from "../src/lifecyle.machine";
+import { DocLifecycleContext, DocLifecycleEvent, mkAppLifecycleMachine } from "../src/lifecycle.machine";
 import { mkWriteDebouncer } from "../src/debouncer.machine";
-import { interpret } from "xstate";
+import { interpret, StateMachine } from "xstate";
 
 test("mkAppLifecycleMachine", (done) => {
-  var testMachine = mkAppLifecycleMachine(
+  var testMachine : StateMachine<DocLifecycleContext<string>, any, DocLifecycleEvent> = mkAppLifecycleMachine<string>(
     async () => "",
     (_, contents) => {
       return mkWriteDebouncer(contents).withConfig({ delays: { DEBOUNCE_TIME: 0 }, services: { flush: () => new Promise((resolve) => { resolve("") }) } })
     }
   ).withContext({ href: "foo" });
   let svc = interpret(testMachine);
-  svc.onTransition((_s, e) => {
+  svc.onTransition((_s, _e) => {
   });
 
   svc.start();

@@ -21,15 +21,11 @@ export type DebounceEvent<T> =
 const wasFlushDirtied = <T>(_ctx: DebounceContext<T>, _e: any, meta: GuardMeta<DebounceContext<T>, any>) =>
   (meta.state.value as any).FLUSHING == 'DIRTY'
 
-export type Schema<T> = {
-  value: "IDLE" | "DEBOUNCE" | "FLUSH";
-  context: DebounceContext<T>;
-};
 
-export type DebouncerMachine<T> = StateMachine<DebounceContext<T>, Schema<T>, DebounceEvent<T>>
+export type DebouncerMachine<T> = StateMachine<DebounceContext<T>, any, DebounceEvent<T>>
 
 export let WriteDebouncer = <T>() =>
-  createMachine<DebounceContext<T>, DebounceEvent<T>, Schema<T>>(
+  createMachine<DebounceContext<T>, DebounceEvent<T>>(
     {
       id: "debouncer",
       initial: "IDLE",
@@ -124,7 +120,7 @@ export let WriteDebouncer = <T>() =>
     }
   );
 
-export function mkWriteDebouncer<T>(initialContents: T): StateMachine<DebounceContext<T>, any, DebounceEvent<T>, Schema<T>> {
+export function mkWriteDebouncer<T>(initialContents: T): StateMachine<DebounceContext<T>, any, DebounceEvent<T>> {
   return WriteDebouncer<T>().withContext({
     latestContents: initialContents,
     error: undefined,
