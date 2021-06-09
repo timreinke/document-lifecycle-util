@@ -1,6 +1,6 @@
 {
   "name": "document-lifecycle-util",
-  "version": "0.0.5",
+  "version": "0.0.6",
   "description": "Machines for managing document lifecycles in editor applications",
   "keywords": [
     "xstate"
@@ -10,7 +10,8 @@
   "license": "MIT",
   "main": "dist/index.js",
   "files": [
-    "dist/**/*.js"
+    "dist/**/*.js",
+    "dist/**/*.d.ts"
   ],
   "publishConfig": {
     "registry": "https://registry.yarnpkg.com"
