@@ -25,7 +25,6 @@ export const Basic = () => {
         flush: (context) => {
           return new Promise((resolve, reject) =>
             setTimeout(() => {
-              console.log("sending");
               if (Math.random() < 0.6) {
                 reject(`oh no there was a ${Math.random() < 0.5 ? 'client disconnect' : 'server'} error`)
                 return

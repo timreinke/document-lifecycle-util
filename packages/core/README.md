@@ -8,4 +8,3 @@ implement document editors.
 TODO
 
 ## Machines
-### `src/debouncer.machine.ts`

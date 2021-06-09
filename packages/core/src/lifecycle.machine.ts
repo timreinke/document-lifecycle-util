@@ -71,10 +71,8 @@ export let mkAppLifecycleMachine = <T>(
           persister: (context, _event) =>
             spawn(mkSaveMachine(context.href, context.contents as T).withConfig({
               actions: {
-                onWrite: 
-                  actions.pure((c, e) =>{
-                    return [sendParent({ type: 'WRITE.DONE' })]
-                  })
+                onWrite:
+                  sendParent({ type: 'WRITE.DONE' })
               }
             }), {
               sync: true,
